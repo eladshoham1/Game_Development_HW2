@@ -20,15 +20,22 @@ public class OpenYardDoor : MonoBehaviour
 
     }
 
+    IEnumerator doorSoundDelay()
+    {
+        yield return new WaitForSeconds(0.85f);
+        doorSound.Play();
+    }
     void OnTriggerEnter(Collider col)
     {
         anim.SetBool("opening", true);
-        doorSound.Play();
-    }
+        anim.SetBool("closening", false);
+        StartCoroutine(doorSoundDelay());
 
+    }
     void OnTriggerExit(Collider col)
     {
+        anim.SetBool("closening", true);
         anim.SetBool("opening", false);
-        doorSound.Play();
+        StartCoroutine(doorSoundDelay());
     }
 }

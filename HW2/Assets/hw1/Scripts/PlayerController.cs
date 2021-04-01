@@ -10,21 +10,33 @@ public class PlayerController : MonoBehaviour
     public float jumpHeight = 10.0f;
     public float gravity = 20f;
 
+    public AudioClip FootStepsSound;
+    public AudioClip JumpSound;
+    public AudioClip LandingSound;
+
     private Vector3 moveDir = Vector3.zero;
 
     private CharacterController controller;
+    private AudioSource audioSource;
+    private bool wasGrounded = false;
+    private bool isJumpPressed = false;
 
-    private AudioSource footStepSound;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
-
-        footStepSound = GetComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
+
     void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
+            isJumpPressed = true;
+    }
+
+    void FixedUpdate()
     {
         if (controller.isGrounded)
         {
@@ -34,20 +46,54 @@ public class PlayerController : MonoBehaviour
                 moveDir *= (speed * 1.5f);
             else
                 moveDir *= speed;
+
+            if (controller.velocity.sqrMagnitude > 0f)
+            {
+                if (!audioSource.isPlaying)
+                {
+                    audioSource.clip = FootStepsSound;
+                    audioSource.Play();
+                }
+            }
+
+            else
+            {
+                if (audioSource.clip != JumpSound && audioSource.clip != LandingSound)
+                    if (audioSource.isPlaying)
+                        audioSource.Stop();
+            }
+
+            if (controller.isGrounded != wasGrounded)
+            {
+                audioSource.Stop();
+                audioSource.clip = LandingSound;
+                audioSource.Play();
+            }
+            wasGrounded = true;
+        }
+        else
+        {
+            if (audioSource.clip != JumpSound && audioSource.clip != LandingSound)
+                if (audioSource.isPlaying)
+                    audioSource.Stop();
+
+            if (controller.isGrounded != wasGrounded)
+            {
+                audioSource.Stop();
+                audioSource.clip = JumpSound;
+                audioSource.Play();
+            }
+            wasGrounded = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
+        if(isJumpPressed)
         {
-            footStepSound.Stop();
             moveDir.y = jumpHeight;
+            isJumpPressed = false;
         }
 
         moveDir.y -= gravity * Time.deltaTime;
-
         controller.Move(moveDir * Time.deltaTime);
-
-        // add sound of foot steps
-        if (!footStepSound.isPlaying && controller.velocity.magnitude > 0.1f)
-            footStepSound.Play();
     }
+
 }
