@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
         {
+            footStepSound.Stop();
             moveDir.y = jumpHeight;
         }
 
